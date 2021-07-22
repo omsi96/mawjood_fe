@@ -1,11 +1,8 @@
-import React from 'react';
+import React from "react";
+import AppBar from "../AppBar";
 
 const index = () => {
-    return (
-        <div>
-           <h2>Home</h2> 
-        </div>
-    );
+  return <div>{/* <AppBar /> */}</div>;
 };
 
 export default index;
