@@ -6,6 +6,8 @@ import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
+import { Link, Tab } from "@material-ui/core";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -16,27 +18,30 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     flexGrow: 1,
+    // flexDirection: "column",
   },
 }));
 
 export default function ButtonAppBar() {
   const classes = useStyles();
-
+  const history = useHistory();
   return (
     <div className={classes.root}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="menu"
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" className={classes.title}>
-            News
-          </Typography>
+          {/* <div className={classes.title}> */}
+
+          <Typography variant="h6">Mawjood</Typography>
+          <div>
+            <Button onClick={() => history.push("/subjects")} color="inherit">
+              Subjects
+            </Button>
+          </div>
+          <div className={classes.title}>
+            <Button color="inherit">Classes</Button>
+          </div>
+
+          {/* </div> */}
           <Button color="inherit">Login</Button>
         </Toolbar>
       </AppBar>
