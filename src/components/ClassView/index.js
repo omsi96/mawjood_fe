@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import clsx from 'clsx'
 import { lighten, makeStyles } from '@material-ui/core/styles'
@@ -14,23 +14,26 @@ import {
   Toolbar,
   Typography,
   Paper,
-  Checkbox,
+  Button,
   IconButton,
   Tooltip,
   FormControlLabel,
-  Switch,
-} from '@material-ui/core/'
+  Checkbox,
+  Box,
+  Dialog,
+  DialogContent,
+} from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import FilterListIcon from '@material-ui/icons/FilterList'
+import { useHistory, useParams } from 'react-router-dom'
+import AttendanceModal from './AttendanceModal'
+import axios from '../../utils/axios'
 
-function createData(name, attended, missed) {
-  return { name, attended, missed }
+function createData(name, attended) {
+  return { name, attended }
 }
 
-const rows1 = [
-  createData('Rahaf Alenezi', 2, 4),
-  createData('Omar Alibrahim', 4, 2),
-]
+const rows1 = [createData('Rahaf Alenezi'), createData('Omar Alibrahim')]
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -61,7 +64,6 @@ function stableSort(array, comparator) {
 const headCells = [
   { id: 'name', numeric: false, disablePadding: true, label: 'Name' },
   { id: 'attended', numeric: true, disablePadding: false, label: 'Attended' },
-  { id: 'missed', numeric: true, disablePadding: false, label: 'Missed' },
 ]
 
 function EnhancedTableHead(props) {
@@ -85,7 +87,7 @@ function EnhancedTableHead(props) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? 'right' : 'left'}
+            align={headCell.numeric ? 'center' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}>
             <TableSortLabel
@@ -154,13 +156,15 @@ const EnhancedTableToolbar = (props) => {
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography
-          className={classes.title}
-          variant='h6'
-          id='tableTitle'
-          component='div'>
-          Students
-        </Typography>
+        <>
+          <Typography
+            className={classes.title}
+            variant='h6'
+            id='tableTitle'
+            component='div'>
+            Class ID or Title
+          </Typography>
+        </>
       )}
 
       {numSelected > 0 ? (
@@ -208,12 +212,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-export default function StudentList({ students }) {
-  console.log(
-    '🚀 ~ file: StudentList.js ~ line 212 ~ StudentList ~ students',
-    students
-  )
+export default function ClassView() {
+  const { classId } = useParams()
+  console.log('🚀 ~ file: index.js ~ line 217 ~ ClassView ~ id', classId)
+  const [students, setStudents] = useState([])
+  const history = useHistory()
   const classes = useStyles()
+  let initialCheckedValues = {}
+  const rows = students
+  rows.length > 0 && rows.map((row) => (initialCheckedValues[row.id] = false))
+  const [checked, setChecked] = React.useState(initialCheckedValues)
+
+  const [open, setOpen] = React.useState(false)
   const [order, setOrder] = React.useState('asc')
   const [orderBy, setOrderBy] = React.useState('calories')
   const [selected, setSelected] = React.useState([])
@@ -227,8 +237,46 @@ export default function StudentList({ students }) {
     setOrderBy(property)
   }
 
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelecteds = rows.map((n) => n.name)
+      setSelected(newSelecteds)
+      return
+    }
+    setSelected([])
+  }
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
+  }
+  const handleChange = async (event) => {
+    console.log(
+      '🚀 ~ file: index.js ~ line 241 ~ handleChange ~ event',
+
+      event.target.id
+    )
+
+    setChecked({ ...checked, [event.target.id]: event.target.checked })
+
+    try {
+      const response = await axios.post('/attendance', {
+        studentId: event.target.id,
+        classId,
+      })
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.js ~ line 287 ~ handleChange ~ error',
+        error
+      )
+    }
+  }
+
+  const handleClickOpen = () => {
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    setOpen(false)
   }
 
   const handleChangeRowsPerPage = (event) => {
@@ -236,8 +284,39 @@ export default function StudentList({ students }) {
     setPage(0)
   }
 
+  useEffect(() => {
+    async function getAPIs() {
+      try {
+        const studentsResponse = await axios.get('/attendance')
+        setStudents(studentsResponse.data)
+        console.log(
+          '🚀 ~ file: index.js ~ line 34 ~ response',
+          studentsResponse.data
+        )
+      } catch (error) {
+        console.log('🚀 ~ file: index.js ~ line 56 ~ error', error)
+      }
+      //
+      try {
+        const studentsResponse = await axios.get('/student')
+        // const attendance =
+        setStudents(studentsResponse.data)
+        console.log(
+          '🚀 ~ file: index.js ~ line 34 ~ response',
+          studentsResponse.data
+        )
+      } catch (error) {
+        console.log('🚀 ~ file: index.js ~ line 309 ~ getAPIs ~ error', error)
+        console.log('🚀 ~ file: index.js ~ line 56 ~ error', error)
+      }
+    }
+    getAPIs()
+    return () => {
+      setStudents([])
+    }
+  }, [])
+
   const isSelected = (name) => selected.indexOf(name) !== -1
-  let rows = students
 
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage)
@@ -245,8 +324,22 @@ export default function StudentList({ students }) {
   return (
     students.length > 0 && (
       <div className={classes.root}>
+        <Dialog maxWidth='sm' fullWidth open={open} onClose={handleClose}>
+          <DialogContent>
+            <AttendanceModal />
+          </DialogContent>
+        </Dialog>
         <Paper className={classes.paper}>
           <EnhancedTableToolbar numSelected={selected.length} />
+          <Box ml={2}>
+            <Button
+              onClick={handleClickOpen}
+              style={{ textTransform: 'none' }}
+              variant='contained'
+              color='primary'>
+              Take Attendance
+            </Button>
+          </Box>
           <TableContainer>
             <Table
               className={classes.table}
@@ -262,6 +355,7 @@ export default function StudentList({ students }) {
                 onRequestSort={handleRequestSort}
                 rowCount={rows.length}
               />
+
               <TableBody>
                 {stableSort(rows, getComparator(order, orderBy))
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -291,8 +385,14 @@ export default function StudentList({ students }) {
                           padding='none'>
                           {row.name}
                         </TableCell>
-                        <TableCell align='right'>1{row.attended}</TableCell>
-                        <TableCell align='right'>0{row.missed}</TableCell>
+                        <TableCell align='center'>
+                          {' '}
+                          <Checkbox
+                            id={`${row.id}`}
+                            checked={checked[row.id] || false}
+                            onChange={handleChange}
+                          />
+                        </TableCell>
                       </TableRow>
                     )
                   })}

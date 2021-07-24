@@ -1,13 +1,13 @@
-import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import Button from "@material-ui/core/Button";
-import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
-import { Link, Tab } from "@material-ui/core";
-import { useHistory } from "react-router-dom";
+import React from 'react'
+import { makeStyles } from '@material-ui/core/styles'
+import AppBar from '@material-ui/core/AppBar'
+import Toolbar from '@material-ui/core/Toolbar'
+import Typography from '@material-ui/core/Typography'
+import Button from '@material-ui/core/Button'
+import IconButton from '@material-ui/core/IconButton'
+import MenuIcon from '@material-ui/icons/Menu'
+import { Link, Tab } from '@material-ui/core'
+import { useHistory } from 'react-router-dom'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,31 +20,35 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     // flexDirection: "column",
   },
-}));
+}))
 
 export default function ButtonAppBar() {
-  const classes = useStyles();
-  const history = useHistory();
+  const classes = useStyles()
+  const history = useHistory()
   return (
     <div className={classes.root}>
-      <AppBar position="static">
+      <AppBar position='static'>
         <Toolbar>
           {/* <div className={classes.title}> */}
-
-          <Typography variant="h6">Mawjood</Typography>
+          <Typography
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push('/')}
+            variant='h6'>
+            Mawjood
+          </Typography>
           <div>
-            <Button onClick={() => history.push("/subjects")} color="inherit">
+            {/* <Button onClick={() => history.push('/subjects')} color='inherit'>
               Subjects
-            </Button>
+            </Button> */}
           </div>
           <div className={classes.title}>
-            <Button color="inherit">Classes</Button>
+            {/* <Button color='inherit'>Classes</Button> */}
           </div>
 
           {/* </div> */}
-          <Button color="inherit">Login</Button>
+          <Button color='inherit'>Login</Button>
         </Toolbar>
       </AppBar>
     </div>
-  );
+  )
 }
