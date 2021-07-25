@@ -219,7 +219,7 @@ export default function ClassView() {
   const history = useHistory()
   const classes = useStyles()
   let initialCheckedValues = {}
-  const rows = students
+  const rows = rows1
   rows.length > 0 && rows.map((row) => (initialCheckedValues[row.id] = false))
   const [checked, setChecked] = React.useState(initialCheckedValues)
 
@@ -284,6 +284,34 @@ export default function ClassView() {
     setPage(0)
   }
 
+  //   post('/createsession')
+
+  const handleStartSession = async () => {
+    try {
+      const createSessionResponse = await axios.post(
+        '/attendance/createsession',
+        {
+          classId,
+        }
+      )
+      console.log(
+        '🚀 ~ file: index.js ~ line 294 ~ handleStartSession ~ createSessionResponse',
+        createSessionResponse
+      )
+    } catch (error) {
+      console.log(
+        '🚀 ~ file: index.js ~ line 302 ~ handleStartSession ~ error',
+        error
+      )
+    }
+
+    // handleClickOpen({
+    //   classSecret: createSessionResponse.data.session.createSessionResponse,
+    //   classId,
+    //   sessionId: id.createSessionResponse.data.session,
+    // })
+  }
+
   useEffect(() => {
     async function getAPIs() {
       try {
@@ -322,11 +350,11 @@ export default function ClassView() {
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage)
 
   return (
-    students.length > 0 && (
+    rows1.length > 0 && (
       <div className={classes.root}>
         <Dialog maxWidth='sm' fullWidth open={open} onClose={handleClose}>
           <DialogContent>
-            <AttendanceModal />
+            <AttendanceModal classId={classId} closeModal={handleClose} />
           </DialogContent>
         </Dialog>
         <Paper className={classes.paper}>
@@ -337,7 +365,7 @@ export default function ClassView() {
               style={{ textTransform: 'none' }}
               variant='contained'
               color='primary'>
-              Take Attendance
+              Open Session
             </Button>
           </Box>
           <TableContainer>
